@@ -1,2 +1,2 @@
 # Description
-An audio player that can sort tracks based on the selected enviroment, vibe, and situation. Users can add tracks from either local files or by URL.
+An audio player that can sort tracks based on the selected enviroment, vibe, and situation. Users can import tracks with local files or providing URLs.
