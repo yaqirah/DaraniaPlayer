@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static DaraniaPlayer.Common;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace DaraniaPlayer
@@ -21,6 +23,7 @@ namespace DaraniaPlayer
         Main_Form mainForm;
         bool editing = false;
         int trackIndex = 0;
+        bool youtubeDownloaded = false;
 
         public ImportTrack_Form(Main_Form mainForm)
         {
@@ -52,6 +55,8 @@ namespace DaraniaPlayer
             enviroment_comboBox.DataSource = Enum.GetValues(typeof(ENVIROMENT));
             vibe_comboBox.DataSource = Enum.GetValues(typeof(VIBE));
             situation_comboBox.DataSource = Enum.GetValues(typeof(SITUATION));
+
+            fileExtension_comboBox.SelectedIndex = 0;
         }
 
         private void LoadTrack(Track track)
@@ -61,7 +66,7 @@ namespace DaraniaPlayer
 
             // Load fields
             fileName_textBox.Text = fileNameParts[0].Replace(tracksFolder, "");
-            fileExtension_comboBox.SelectedIndex = fileExtension_comboBox.FindStringExact("." + fileNameParts[1]);
+            fileExtension_comboBox.SelectedIndex = fileExtension_comboBox.FindStringExact(fileNameParts[1]);
             sourceName_text.Text = track.trackInfo.sourceName;
             trackName_text.Text = track.trackInfo.trackName;
             volume_upDown.Value = (decimal)track.trackInfo.volume * 100;
@@ -141,7 +146,7 @@ namespace DaraniaPlayer
             // Save fields
             Track newTrack = new Track();
 
-            string trackFileName = fileName_textBox.Text + fileExtension_comboBox.Text;
+            string trackFileName = fileName_textBox.Text + "." + fileExtension_comboBox.Text;
             string jsonFileName = fileName_textBox.Text + ".json";
 
             newTrack.trackInfo.fileName = trackFileName;
@@ -157,21 +162,19 @@ namespace DaraniaPlayer
 
             if (!editing)
             {
-                // Assume the track audio isn't already in the folder
-                File.Copy(originalFileName, @tracksFolder + trackFileName, true);
+                if (!youtubeDownloaded)
+                {
+                    // Assume the track audio isn't already in the folder
+                    File.Copy(originalFileName, @tracksFolder + trackFileName, true);
+                }
+
                 mainForm.AddTrack(newTrack);
             }
             else
             {
-                System.Diagnostics.Debug.Print("trackFileName " + trackFileName);
-                System.Diagnostics.Debug.Print("originalFileName " + trackFileName);
-                System.Diagnostics.Debug.Print("@tracksFolder + originalFileName " + (@tracksFolder + originalFileName));
-                System.Diagnostics.Debug.Print("trackFileName != originalFileName " + (trackFileName != originalFileName));
-                System.Diagnostics.Debug.Print("@tracksFolder + trackFileName != originalFileName " + (@tracksFolder + trackFileName != originalFileName));
-                System.Diagnostics.Debug.Print("originalFileName.Contains(@tracksFolder) " + (originalFileName.Contains(@tracksFolder)));
                 if ((trackFileName != originalFileName && @tracksFolder + trackFileName != originalFileName) && originalFileName.Contains(@tracksFolder))
                 {
-                    
+
                     File.Copy(originalFileName, @tracksFolder + trackFileName, true);
                     File.Delete(originalFileName);
                 }
@@ -197,6 +200,82 @@ namespace DaraniaPlayer
             foreach (string file in files)
             {
                 LoadAudio(file);
+            }
+        }
+
+        private void loadYoutube_button_Click(object sender, EventArgs e)
+        {
+            if (youtubeURL_textbox.Text == "")
+            {
+                MessageBox.Show("Provide a youtube URL");
+                return;
+            }
+
+            if (sourceName_text.Text == "" || trackName_text.Text == "")
+            {
+                MessageBox.Show("Provide a source name and track name to save the file.");
+                return;
+            }
+
+            if (youtubeURL_textbox.Text != "" && sourceName_text.Text != "" && trackName_text.Text != "")
+            {
+                // Create command to download video
+                string args = "";
+
+                args += "-i " + youtubeURL_textbox.Text + " ";
+                args += "-f bestaudio* "; // Best audio format, including video formats
+                args += "-x --audio-format " + fileExtension_comboBox.Text + " "; // Save as audio only
+                args += "--no-playlist ";
+
+                string outputFileName = FormatFileName(sourceName_text.Text) + "_" + FormatFileName(trackName_text.Text);
+                args += "-o " + tracksFolder + outputFileName + ".%(ext)s ";
+
+                Debug.Print(args);
+
+                // Create process
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "yt-dlp.exe");
+                startInfo.Arguments = args;
+
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+                startInfo.UseShellExecute = false;
+                startInfo.CreateNoWindow = true;
+
+                youtubeDownloaded = true; // true until proven otherwise
+                using (Process process = Process.Start(startInfo))
+                {
+                    process.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
+                    process.ErrorDataReceived += new DataReceivedEventHandler(ErrorDataReceived);
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                }
+
+                // Set the file name if it was successful
+                if (youtubeDownloaded)
+                {
+                    originalFileName = outputFileName + "." + fileExtension_comboBox.Text;
+                    fileName_textBox.Text = outputFileName;
+                }
+            }
+        }
+
+        private void OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                // Process the output data here
+                Debug.Print(e.Data);
+            }
+        }
+
+        private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null && e.Data.Contains("ERROR"))
+            {
+                MessageBox.Show(e.Data);
+                youtubeDownloaded = false;
             }
         }
     }

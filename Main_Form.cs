@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using static DaraniaPlayer.Common;
@@ -265,6 +266,13 @@ namespace DaraniaPlayer
         {
             ImportTrack_Form importForm = new ImportTrack_Form(this, GetTrackIndex(true)); // Get the selected track using the index for all tracks
             importForm.Show();
+        }
+
+        private void random_button_Click(object sender, EventArgs e)
+        {
+            Random rand = new Random();
+            tracks_listBox.SelectedIndex = rand.Next(0, tracks_listBox.Items.Count);
+            Play();
         }
 
         private List<T> GetSelectedOptions<T>(CheckedListBox listBox) where T : System.Enum

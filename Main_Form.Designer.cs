@@ -45,6 +45,7 @@
             vibe_checkedListBox = new CheckedListBox();
             filter_button = new Button();
             editTrack_button = new Button();
+            random_button = new Button();
             ((System.ComponentModel.ISupportInitialize)mediaPlayer).BeginInit();
             loopMode_groupbox.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -240,12 +241,23 @@
             editTrack_button.UseVisualStyleBackColor = true;
             editTrack_button.Click += editTrack_button_Click;
             // 
+            // random_button
+            // 
+            random_button.Location = new Point(12, 412);
+            random_button.Name = "random_button";
+            random_button.Size = new Size(85, 23);
+            random_button.TabIndex = 10;
+            random_button.Text = "Random";
+            random_button.UseVisualStyleBackColor = true;
+            random_button.Click += random_button_Click;
+            // 
             // Main_Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Maroon;
             ClientSize = new Size(850, 443);
+            Controls.Add(random_button);
             Controls.Add(editTrack_button);
             Controls.Add(filter_button);
             Controls.Add(groupBox3);
@@ -284,5 +296,6 @@
         private CheckedListBox situation_checkedListBox;
         private Button editTrack_button;
         internal AxWMPLib.AxWindowsMediaPlayer mediaPlayer;
+        private Button random_button;
     }
 }
