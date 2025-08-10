@@ -98,9 +98,16 @@ namespace DaraniaPlayer
             player.URL = null;
             await Task.Delay(1);
 
-            while ((PlayState)player.playState is not (PlayState.STOPPED or PlayState.READY))
+            try
             {
-                await Task.Delay(1);
+                while ((PlayState)player.playState is not (PlayState.STOPPED or PlayState.READY))
+                {
+                    await Task.Delay(1);
+                }
+            }
+            catch (Exception e)
+            {
+
             }
         }
     }

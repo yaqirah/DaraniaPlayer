@@ -44,6 +44,10 @@ namespace DaraniaPlayer
 
         public void LoadTracks()
         {
+            if (!Directory.Exists(tracksFolder))
+            {
+                return;
+            }
             string[] files = System.IO.Directory.GetFiles(tracksFolder, "*.json");
             foreach (string filePath in files)
             {

@@ -105,6 +105,8 @@ namespace DaraniaPlayer
             // Display to the form
             fileName_textBox.Text = fileName;
             fileName_textBox.Enabled = true;
+            System.Diagnostics.Debug.Print(extension);
+            extension = extension.Replace(".", "");
             fileExtension_comboBox.SelectedIndex = fileExtension_comboBox.FindString(extension);
             previewPlayer.URL = loadedFile;
         }
