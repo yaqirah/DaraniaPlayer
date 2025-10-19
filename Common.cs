@@ -7,55 +7,18 @@ namespace DaraniaPlayer
     public static class Common
     {
         public static string tracksFolder = "tracks\\";
-
-        public enum ENVIROMENT
-        {
-            NEUTRAL    = 0,
-            COAST      = 1,
-            DESERT     = 2,
-            SWAMP      = 3,
-            SNOW       = 4,
-            GRASSLANDS = 5,
-            FUTURISTIC = 6,
-            INDUSTRIAL = 7
-        }
-
-        public enum VIBE
-        {
-            NEUTRAL       = 0,
-            UPBEAT        = 1,
-            MYSTERIOUS    = 2,
-            TENSE         = 3,
-            RELAXED       = 4,
-            RELIGIOUS     = 5,
-            FANCY         = 6,
-            INVESTIGATION = 7,
-            PARTY         = 8,
-            SILLY         = 9,
-            GRAND         = 10,
-            MELANCHOLY    = 11,
-            HOPEFUL       = 12
-        }
-
-        public enum SITUATION
-        {
-            TOWN    = 0,
-            DUNGEON = 1,
-            COMBAT  = 2,
-            BOSS    = 3,
-            TRAVEL  = 4
-        }
+        public static string categoryFolder = "categories\\";
 
         public class TrackInfo
         {
-            public string     fileName      = "";
-            public string     sourceName    = "";
-            public string     trackName     = "";
-            public double     volume        = 1.0; // Max = 1.0
-            public ENVIROMENT enviroment    = 0;
-            public VIBE       vibe          = 0;
-            public SITUATION  situation     = 0;
-            public string     jsonFileName  = "";
+            public string fileName      = "";
+            public string sourceName    = "";
+            public string trackName     = "";
+            public double volume        = 1.0; // Max = 1.0
+            public int    enviroment    = 0;
+            public int    vibe          = 0;
+            public int    situation     = 0;
+            public string jsonFileName  = "";
         }
 
         public enum PlayState

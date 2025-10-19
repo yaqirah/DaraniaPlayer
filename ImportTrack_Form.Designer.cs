@@ -51,6 +51,7 @@
             youtubeURL_textbox = new TextBox();
             label8 = new Label();
             loadYoutube_button = new Button();
+            autoFormat_checkBox = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)volume_upDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)previewPlayer).BeginInit();
             SuspendLayout();
@@ -82,6 +83,7 @@
             sourceName_text.Name = "sourceName_text";
             sourceName_text.Size = new Size(339, 23);
             sourceName_text.TabIndex = 3;
+            sourceName_text.TextChanged += sourceName_text_TextChanged;
             // 
             // label2
             // 
@@ -110,6 +112,7 @@
             trackName_text.Name = "trackName_text";
             trackName_text.Size = new Size(339, 23);
             trackName_text.TabIndex = 5;
+            trackName_text.TextChanged += trackName_text_TextChanged;
             // 
             // volume_upDown
             // 
@@ -260,6 +263,17 @@
             loadYoutube_button.UseVisualStyleBackColor = true;
             loadYoutube_button.Click += loadYoutube_button_Click;
             // 
+            // autoFormat_checkBox
+            // 
+            autoFormat_checkBox.AutoSize = true;
+            autoFormat_checkBox.ForeColor = Color.White;
+            autoFormat_checkBox.Location = new Point(190, 127);
+            autoFormat_checkBox.Name = "autoFormat_checkBox";
+            autoFormat_checkBox.Size = new Size(149, 19);
+            autoFormat_checkBox.TabIndex = 24;
+            autoFormat_checkBox.Text = "Auto Format File Name";
+            autoFormat_checkBox.UseVisualStyleBackColor = true;
+            // 
             // ImportTrack_Form
             // 
             AllowDrop = true;
@@ -267,6 +281,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Maroon;
             ClientSize = new Size(574, 280);
+            Controls.Add(autoFormat_checkBox);
             Controls.Add(loadYoutube_button);
             Controls.Add(youtubeURL_textbox);
             Controls.Add(label8);
@@ -324,5 +339,6 @@
         private TextBox youtubeURL_textbox;
         private Label label8;
         private Button loadYoutube_button;
+        private CheckBox autoFormat_checkBox;
     }
 }

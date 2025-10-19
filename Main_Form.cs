@@ -19,10 +19,12 @@ namespace DaraniaPlayer
         public Main_Form()
         {
             InitializeComponent();
-            LoadTracks();
             LoadLists();
+            LoadTracks();
 
             mediaPlayer.PlayStateChange += new AxWMPLib._WMPOCXEvents_PlayStateChangeEventHandler(MusicEnded);
+
+            StopPlayer(mediaPlayer);
         }
 
         private async void MusicEnded(object sender, AxWMPLib._WMPOCXEvents_PlayStateChangeEvent e)
@@ -94,17 +96,22 @@ namespace DaraniaPlayer
 
         public void LoadLists()
         {
-            LoadList(enviroment_checkedListBox, new ENVIROMENT());
-            LoadList(vibe_checkedListBox, new VIBE());
-            LoadList(situation_checkedListBox, new SITUATION());
+            LoadList(enviroment_checkedListBox, "enviroment.txt");
+            LoadList(vibe_checkedListBox, "vibe.txt");
+            LoadList(situation_checkedListBox, "situation.txt");
         }
 
-        public void LoadList(CheckedListBox listbox, Enum e)
+        public void LoadList(CheckedListBox listbox, String file)
         {
-            string[] enumValues = Enum.GetNames(e.GetType());
-            foreach (string val in enumValues)
+            if ( file.Contains("enviroment") || file.Contains("vibe"))
             {
-                listbox.Items.Add(Common.Capitalize(val), true); // Add checked
+                listbox.Items.Add("Neutral", true); // Add checked
+            }
+
+            string[] fileLines = File.ReadAllLines(@categoryFolder + file);
+            foreach (string val in fileLines)
+            {
+                listbox.Items.Add(val, true); // Add checked
             }
         }
 
@@ -117,8 +124,6 @@ namespace DaraniaPlayer
         private void Play()
         {
             mediaPlayer.URL = tracksFolder + currentTracks[trackIndex].trackInfo.fileName;
-
-            System.Diagnostics.Debug.Print(mediaPlayer.URL);
         }
 
         private void addTrack_button_Click(object sender, EventArgs e)
@@ -219,9 +224,9 @@ namespace DaraniaPlayer
         public void FilterTracks()
         {
             filtering = true;
-            List<VIBE> selectedVibes = GetSelectedOptions<VIBE>(vibe_checkedListBox);
-            List<ENVIROMENT> selectedEnviroments = GetSelectedOptions<ENVIROMENT>(enviroment_checkedListBox);
-            List<SITUATION> selectedSituations = GetSelectedOptions<SITUATION>(situation_checkedListBox);
+            List<int> selectedVibes = GetSelectedOptions<int>(vibe_checkedListBox);
+            List<int> selectedEnviroments = GetSelectedOptions<int>(enviroment_checkedListBox);
+            List<int> selectedSituations = GetSelectedOptions<int>(situation_checkedListBox);
 
             tracks_listBox.Items.Clear();
             currentTracks = new List<Track>();
@@ -279,15 +284,15 @@ namespace DaraniaPlayer
             Play();
         }
 
-        private List<T> GetSelectedOptions<T>(CheckedListBox listBox) where T : System.Enum
+        private List<int> GetSelectedOptions<T>(CheckedListBox listBox)
         {
-            List<T> selectedValues = new List<T>();
+            List<int> selectedValues = new List<int>();
 
             for (int i = 0; i < listBox.Items.Count; i++)
             {
                 if (listBox.GetItemChecked(i))
                 {
-                    selectedValues.Add(Common.IntToEnum<T>(i));
+                    selectedValues.Add(i);
                 }
             }
 

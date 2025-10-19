@@ -11,8 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static DaraniaPlayer.Common;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace DaraniaPlayer
 {
@@ -52,11 +50,20 @@ namespace DaraniaPlayer
 
             StopPlayer(mainForm.mediaPlayer);
 
-            enviroment_comboBox.DataSource = Enum.GetValues(typeof(ENVIROMENT));
-            vibe_comboBox.DataSource = Enum.GetValues(typeof(VIBE));
-            situation_comboBox.DataSource = Enum.GetValues(typeof(SITUATION));
+            CopyMainItems(enviroment_comboBox, mainForm.enviroment_checkedListBox);
+            CopyMainItems(vibe_comboBox, mainForm.vibe_checkedListBox);
+            CopyMainItems(situation_comboBox, mainForm.situation_checkedListBox);
 
             fileExtension_comboBox.SelectedIndex = 0;
+        }
+
+        private void CopyMainItems(ComboBox importComboBox, CheckedListBox mainListBox)
+        {
+            foreach (var item in mainListBox.Items)
+            {
+                importComboBox.Items.Add(item);
+            }
+            importComboBox.SelectedIndex = 0;
         }
 
         private void LoadTrack(Track track)
@@ -98,17 +105,55 @@ namespace DaraniaPlayer
         {
             // Parse input
             originalFileName = loadedFile;
+
             string extension = Path.GetExtension(originalFileName);
             string fileName = Path.GetFileNameWithoutExtension(originalFileName);
+            extension = extension.Replace(".", "");
+
+            // Convert unsupported extensions to mp3
+            if (extension == "ogg")
+            {
+                string folder = Path.GetDirectoryName(originalFileName);
+                string convertedFileName = folder + fileName + ".mp3";
+
+                // Check if the converted version exists.
+                if (!File.Exists(convertedFileName))
+                {
+                    string args = "-i " + "\"" + originalFileName + "\"" + " " + "\"" + folder + fileName + "\"" + ".mp3";
+
+                    // Create process
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe");
+                    startInfo.Arguments = args;
+
+                    Debug.Print(startInfo.FileName + " " + startInfo.Arguments);
+
+                    startInfo.RedirectStandardOutput = true;
+                    startInfo.RedirectStandardError = true;
+                    startInfo.UseShellExecute = false;
+                    startInfo.CreateNoWindow = true;
+
+                    using (Process process = Process.Start(startInfo))
+                    {
+                        process.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
+                        process.ErrorDataReceived += new DataReceivedEventHandler(ErrorDataReceived);
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                        process.WaitForExit();
+                    }
+                }
+
+                originalFileName = folder + fileName + ".mp3";
+                extension = "mp3";
+            }
+
             fileName = FormatFileName(fileName);
 
             // Display to the form
             fileName_textBox.Text = fileName;
             fileName_textBox.Enabled = true;
-            System.Diagnostics.Debug.Print(extension);
-            extension = extension.Replace(".", "");
             fileExtension_comboBox.SelectedIndex = fileExtension_comboBox.FindString(extension);
-            previewPlayer.URL = loadedFile;
+            previewPlayer.URL = originalFileName;
         }
 
         // Whitespace and punctuation besides underscore/dash
@@ -124,9 +169,17 @@ namespace DaraniaPlayer
 
         private void setFileName_button_Click(object sender, EventArgs e)
         {
-            string sourceName = FormatFileName(sourceName_text.Text);
-            string trackName = FormatFileName(trackName_text.Text);
-            fileName_textBox.Text = sourceName + "_" + trackName;
+            formatFilenameFromInfo();
+        }
+
+        private void formatFilenameFromInfo()
+        {
+            if (sourceName_text.Text != "" && trackName_text.Text != "")
+            {
+                string sourceName = FormatFileName(sourceName_text.Text);
+                string trackName = FormatFileName(trackName_text.Text);
+                fileName_textBox.Text = sourceName + "_" + trackName;
+            }
         }
 
         private void fileName_textBox_Validated(object sender, EventArgs e)
@@ -155,9 +208,9 @@ namespace DaraniaPlayer
             newTrack.trackInfo.sourceName = sourceName_text.Text;
             newTrack.trackInfo.trackName = trackName_text.Text;
             newTrack.trackInfo.volume = (double)volume_upDown.Value / 100;
-            newTrack.trackInfo.enviroment = (ENVIROMENT)enviroment_comboBox.SelectedIndex;
-            newTrack.trackInfo.vibe = (VIBE)vibe_comboBox.SelectedIndex;
-            newTrack.trackInfo.situation = (SITUATION)situation_comboBox.SelectedIndex;
+            newTrack.trackInfo.enviroment = enviroment_comboBox.SelectedIndex;
+            newTrack.trackInfo.vibe = vibe_comboBox.SelectedIndex;
+            newTrack.trackInfo.situation = situation_comboBox.SelectedIndex;
             newTrack.trackInfo.jsonFileName = jsonFileName;
 
             newTrack.Save();
@@ -232,8 +285,6 @@ namespace DaraniaPlayer
                 string outputFileName = FormatFileName(sourceName_text.Text) + "_" + FormatFileName(trackName_text.Text);
                 args += "-o " + tracksFolder + outputFileName + ".%(ext)s ";
 
-                Debug.Print(args);
-
                 // Create process
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "yt-dlp.exe");
@@ -278,6 +329,22 @@ namespace DaraniaPlayer
             {
                 MessageBox.Show(e.Data);
                 youtubeDownloaded = false;
+            }
+        }
+
+        private void trackName_text_TextChanged(object sender, EventArgs e)
+        {
+            if (autoFormat_checkBox.Checked)
+            {
+                formatFilenameFromInfo();
+            }
+        }
+
+        private void sourceName_text_TextChanged(object sender, EventArgs e)
+        {
+            if (autoFormat_checkBox.Checked)
+            {
+                formatFilenameFromInfo();
             }
         }
     }

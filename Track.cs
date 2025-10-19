@@ -25,7 +25,6 @@ public class Track
     {
         if (trackInfo == null)
         {
-            System.Diagnostics.Debug.Print("TrackInfo is null!");
             return;
         }
 

@@ -290,12 +290,12 @@
         private GroupBox groupBox1;
         private GroupBox groupBox2;
         private GroupBox groupBox3;
-        private CheckedListBox vibe_checkedListBox;
-        private CheckedListBox enviroment_checkedListBox;
         private Button filter_button;
-        private CheckedListBox situation_checkedListBox;
         private Button editTrack_button;
         internal AxWMPLib.AxWindowsMediaPlayer mediaPlayer;
         private Button random_button;
+        public CheckedListBox vibe_checkedListBox;
+        public CheckedListBox enviroment_checkedListBox;
+        public CheckedListBox situation_checkedListBox;
     }
 }
